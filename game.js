@@ -4,62 +4,49 @@ scene.background = new THREE.Color(0x87ceeb);
 
 const camera = new THREE.PerspectiveCamera(
   75,
-  window.innerWidth/window.innerHeight,
+  window.innerWidth / window.innerHeight,
   0.1,
   1000
 );
-camera.position.set(0, 2, 5); // above the floor
+camera.position.set(0, 2, 10); // start above floor, away from cube
 
 // ===== Renderer =====
-const renderer = new THREE.WebGLRenderer({antialias:true});
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// ===== Spinning Cube =====
-const cube = new THREE.Mesh(
-  new THREE.BoxGeometry(2,2,2),
-  new THREE.MeshBasicMaterial({color:0xff0000})
-);
-scene.add(cube);
-
 // ===== Floor =====
 const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(200,200),
-  new THREE.MeshBasicMaterial({color:0x228b22})
+  new THREE.PlaneGeometry(200, 200),
+  new THREE.MeshBasicMaterial({ color: 0x228b22 })
 );
-floor.rotation.x = -Math.PI/2;
+floor.rotation.x = -Math.PI / 2;
 floor.position.y = -1;
 scene.add(floor);
 
-// ===== Controls =====
+// ===== Cube =====
+const cube = new THREE.Mesh(
+  new THREE.BoxGeometry(2, 2, 2),
+  new THREE.MeshBasicMaterial({ color: 0xff0000 })
+);
+cube.position.set(0, 1, 0);
+scene.add(cube);
+
+// ===== PointerLockControls =====
 const controls = new THREE.PointerLockControls(camera, document.body);
-
-const instructions = document.createElement("div");
-instructions.style.position = "absolute";
-instructions.style.width = "100%";
-instructions.style.textAlign = "center";
-instructions.style.top = "50%";
-instructions.style.fontSize = "24px";
-instructions.style.color = "white";
-instructions.style.fontFamily = "sans-serif";
-instructions.style.cursor = "pointer";
-instructions.innerText = "Click to play";
-document.body.appendChild(instructions);
-
+const instructions = document.getElementById("instructions");
 instructions.addEventListener("click", () => controls.lock());
 
 controls.addEventListener("lock", () => instructions.style.display = "none");
 controls.addEventListener("unlock", () => instructions.style.display = "block");
 
-// Movement
+// ===== WASD Movement =====
 const keys = {};
 document.addEventListener("keydown", e => keys[e.code] = true);
 document.addEventListener("keyup", e => keys[e.code] = false);
-
 const speed = 0.1;
 
-
-// ===== Animate =====
+// ===== Animate Loop =====
 function animate() {
   requestAnimationFrame(animate);
 
@@ -79,15 +66,16 @@ function animate() {
 
   camera.position.copy(newPos);
 
+  // Rotate cube for visual feedback
   cube.rotation.y += 0.01;
 
   renderer.render(scene, camera);
 }
 animate();
 
-// ===== Resize =====
+// ===== Handle Window Resize =====
 window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
