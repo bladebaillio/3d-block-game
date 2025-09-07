@@ -15,3 +15,10 @@ function animate() {
     renderer.render(scene, camera);
 }
 animate();
+// Floor
+const floorGeometry = new THREE.PlaneGeometry(200, 200);
+const floorMaterial = new THREE.MeshBasicMaterial({ color: 0x228b22 });
+const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+floor.rotation.x = -Math.PI / 2; // rotate to lie flat
+floor.position.y = -1; // position under the cube
+scene.add(floor);
