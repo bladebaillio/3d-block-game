@@ -123,31 +123,42 @@ class FirstPersonGame {
     }
 
     render() {
-        this.ctx.fillStyle = '#4A90E2';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    // Clear canvas: sky
+    this.ctx.fillStyle = '#4A90E2';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.ctx.fillStyle = '#8B4513';
-        this.ctx.fillRect(0, this.canvas.height / 2, this.canvas.width, this.canvas.height / 2);
+    // Draw ground
+    this.ctx.fillStyle = '#8B4513';
+    this.ctx.fillRect(0, this.canvas.height / 2, this.canvas.width, this.canvas.height / 2);
 
-        this.castRays();
-        this.drawCrosshair();
-        this.drawMinimap();
+    // Cast rays for 3D walls (original first-person rendering)
+    this.castRays();
 
-        // Draw enemy
-        this.ctx.fillStyle = 'green';
-        this.ctx.beginPath();
-        this.ctx.arc(this.enemy.x, this.enemy.y, 10, 0, Math.PI * 2);
-        this.ctx.fill();
+    // Draw crosshair
+    this.drawCrosshair();
 
-        // Draw bullets
-        this.drawBullets(this.bullets, 'white');
-        this.drawBullets(this.enemyBullets, 'red');
+    // Draw minimap (player + walls)
+    this.drawMinimap();
 
-        // Draw lives
-        this.ctx.fillStyle = 'white';
-        this.ctx.fillText(`Player Lives: ${this.player.lives}`, 10, 20);
-        this.ctx.fillText(`Enemy Lives: ${this.enemy.lives}`, 10, 40);
+    // Draw enemy on minimap and world (green circle)
+    this.ctx.fillStyle = 'green';
+    this.ctx.beginPath();
+    this.ctx.arc(this.enemy.x, this.enemy.y, 10, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    // Draw player bullets (white)
+    this.drawBullets(this.bullets, 'white');
+
+    // Draw enemy bullets (red)
+    this.drawBullets(this.enemyBullets, 'red');
+
+    // Draw player and enemy lives
+    this.ctx.fillStyle = 'white';
+    this.ctx.font = '16px Arial';
+    this.ctx.fillText(`Player Lives: ${this.player.lives}`, 10, 20);
+    this.ctx.fillText(`Enemy Lives: ${this.enemy.lives}`, 10, 40);
     }
+
 
     drawBullets(bullets, color) {
         this.ctx.fillStyle = color;
