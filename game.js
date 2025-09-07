@@ -22,3 +22,10 @@ const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 floor.rotation.x = -Math.PI / 2; // rotate to lie flat
 floor.position.y = -1; // position under the cube
 scene.add(floor);
+// Controls
+const controls = new THREE.PointerLockControls(camera, document.body);
+
+// Click anywhere to lock the pointer
+document.body.addEventListener("click", () => {
+    controls.lock();
+});
