@@ -63,38 +63,41 @@ class FirstPersonGame {
 
     
     update() {
-        // Handle turning (left/right)
-        if (this.keys['ArrowLeft'] || this.keys['a'] || this.keys['A']) {
-            this.player.angle -= this.player.turnSpeed;
-        }
-        if (this.keys['ArrowRight'] || this.keys['d'] || this.keys['D']) {
-            this.player.angle += this.player.turnSpeed;
-        }
-        
-        // Handle movement (forward/back)
-        let moveX = 0;
-        let moveY = 0;
-        
-        if (this.keys['ArrowUp'] || this.keys['w'] || this.keys['W']) {
-            moveX += Math.cos(this.player.angle) * this.player.speed;
-            moveY += Math.sin(this.player.angle) * this.player.speed;
-        }
-        if (this.keys['ArrowDown'] || this.keys['s'] || this.keys['S']) {
-            moveX -= Math.cos(this.player.angle) * this.player.speed;
-            moveY -= Math.sin(this.player.angle) * this.player.speed;
-        }
-        
-        // Simple collision detection
-        let newX = this.player.x + moveX;
-        let newY = this.player.y + moveY;
-        
-        if (!this.checkCollision(newX, this.player.y)) {
-            this.player.x = newX;
-        }
-        if (!this.checkCollision(this.player.x, newY)) {
-            this.player.y = newY;
-        }
+    let moveX = 0;
+    let moveY = 0;
+
+    // Forward/back (W/Up, S/Down)
+    if (this.keys['ArrowUp'] || this.keys['w'] || this.keys['W']) {
+        moveX += Math.cos(this.player.angle) * this.player.speed;
+        moveY += Math.sin(this.player.angle) * this.player.speed;
     }
+    if (this.keys['ArrowDown'] || this.keys['s'] || this.keys['S']) {
+        moveX -= Math.cos(this.player.angle) * this.player.speed;
+        moveY -= Math.sin(this.player.angle) * this.player.speed;
+    }
+
+    // Strafe left/right (A/Left, D/Right)
+    if (this.keys['ArrowLeft'] || this.keys['a'] || this.keys['A']) {
+        moveX += Math.cos(this.player.angle - Math.PI / 2) * this.player.speed;
+        moveY += Math.sin(this.player.angle - Math.PI / 2) * this.player.speed;
+    }
+    if (this.keys['ArrowRight'] || this.keys['d'] || this.keys['D']) {
+        moveX += Math.cos(this.player.angle + Math.PI / 2) * this.player.speed;
+        moveY += Math.sin(this.player.angle + Math.PI / 2) * this.player.speed;
+    }
+
+    // Simple collision detection
+    let newX = this.player.x + moveX;
+    let newY = this.player.y + moveY;
+
+    if (!this.checkCollision(newX, this.player.y)) {
+        this.player.x = newX;
+    }
+    if (!this.checkCollision(this.player.x, newY)) {
+        this.player.y = newY;
+    }
+    }
+
     
     checkCollision(x, y) {
         const playerRadius = 10;
