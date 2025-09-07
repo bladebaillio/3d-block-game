@@ -1,6 +1,6 @@
 // ===== Scene & Camera =====
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb);
+scene.background = new THREE.Color(0x87ceeb); // sky blue
 
 const camera = new THREE.PerspectiveCamera(
   75,
@@ -8,7 +8,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
-camera.position.set(0, 2, 5);
+camera.position.set(0, 2, 10); // above floor, away from walls
 
 // ===== Renderer =====
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -18,37 +18,38 @@ document.body.appendChild(renderer.domElement);
 // ===== Floor =====
 const floor = new THREE.Mesh(
   new THREE.PlaneGeometry(200, 200),
-  new THREE.MeshStandardMaterial({ color: 0x228b22 })
+  new THREE.MeshBasicMaterial({ color: 0x228b22 })
 );
 floor.rotation.x = -Math.PI / 2;
 scene.add(floor);
 
-// ===== Lights =====
-const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
-scene.add(light);
-
 // ===== Walls =====
 const walls = [];
-const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+const wallMaterial = new THREE.MeshBasicMaterial({ color: 0x8b4513 });
+
 const wallData = [
   { x: 0, y: 1, z: -10, w: 20, h: 2, d: 1 },
   { x: 5, y: 1, z: -5, w: 1, h: 2, d: 10 },
   { x: -5, y: 1, z: -5, w: 1, h: 2, d: 10 },
   { x: 0, y: 1, z: -20, w: 20, h: 2, d: 1 }
 ];
+
 wallData.forEach(w => {
-  const wall = new THREE.Mesh(new THREE.BoxGeometry(w.w, w.h, w.d), wallMaterial);
+  const wall = new THREE.Mesh(
+    new THREE.BoxGeometry(w.w, w.h, w.d),
+    wallMaterial
+  );
   wall.position.set(w.x, w.y, w.z);
   scene.add(wall);
   walls.push(wall);
 });
 
-// ===== Random Cubes =====
+// ===== Cubes =====
 const cubes = [];
 for (let i = 0; i < 5; i++) {
   const cube = new THREE.Mesh(
     new THREE.BoxGeometry(2, 2, 2),
-    new THREE.MeshStandardMaterial({ color: 0xff0000 })
+    new THREE.MeshBasicMaterial({ color: 0xff0000 })
   );
   cube.position.set(Math.random() * 20 - 10, 1, Math.random() * -30);
   scene.add(cube);
@@ -58,24 +59,19 @@ for (let i = 0; i < 5; i++) {
 // ===== Controls =====
 const controls = new THREE.PointerLockControls(camera, document.body);
 const instructions = document.getElementById("instructions");
-
-instructions.addEventListener("click", () => {
-  controls.lock();
-});
-
+instructions.addEventListener("click", () => controls.lock());
 controls.addEventListener('lock', () => instructions.style.display = 'none');
 controls.addEventListener('unlock', () => instructions.style.display = 'block');
 
 const keys = {};
 document.addEventListener("keydown", e => keys[e.code] = true);
 document.addEventListener("keyup", e => keys[e.code] = false);
-
 const speed = 0.2;
 
 // ===== Collision Detection =====
-function checkCollision(newPosition) {
+function checkCollision(newPos) {
   const playerBox = new THREE.Box3().setFromCenterAndSize(
-    newPosition,
+    newPos,
     new THREE.Vector3(1, 2, 1)
   );
 
@@ -117,7 +113,7 @@ function animate() {
 }
 animate();
 
-// ===== Handle Resize =====
+// ===== Handle Window Resize =====
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
