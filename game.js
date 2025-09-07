@@ -35,15 +35,32 @@ class FirstPersonGame {
     }
     
     setupEventListeners() {
-        // Keyboard events
-        document.addEventListener('keydown', (e) => {
-            this.keys[e.key] = true;
-        });
-        
-        document.addEventListener('keyup', (e) => {
-            this.keys[e.key] = false;
-        });
+    // Keyboard events
+    document.addEventListener('keydown', (e) => {
+        this.keys[e.key] = true;
+    });
+    
+    document.addEventListener('keyup', (e) => {
+        this.keys[e.key] = false;
+    });
+
+    // Mouse movement for turning
+    this.canvas.addEventListener('click', () => {
+        this.canvas.requestPointerLock(); // Lock pointer on click
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (document.pointerLockElement === this.canvas) {
+            const sensitivity = 0.002; // adjust for comfortable turning
+            this.player.angle += e.movementX * sensitivity;
+
+            // Wrap angle to [0, 2π]
+            this.player.angle %= Math.PI * 2;
+            if (this.player.angle < 0) this.player.angle += Math.PI * 2;
+        }
+    });
     }
+
     
     update() {
         // Handle turning (left/right)
