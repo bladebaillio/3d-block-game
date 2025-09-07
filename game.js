@@ -1,31 +1,125 @@
+// ===== Scene & Camera =====
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-camera.position.z = 5;
-const renderer = new THREE.WebGLRenderer();
+scene.background = new THREE.Color(0x87ceeb);
+
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+camera.position.set(0, 2, 5);
+
+// ===== Renderer =====
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
-const geometry = new THREE.BoxGeometry();
-const material = new THREE.MeshBasicMaterial({color:0x00ff00});
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
+
+// ===== Floor =====
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(200, 200),
+  new THREE.MeshStandardMaterial({ color: 0x228b22 })
+);
+floor.rotation.x = -Math.PI / 2;
+scene.add(floor);
+
+// ===== Lights =====
+const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+scene.add(light);
+
+// ===== Walls =====
+const walls = [];
+const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+const wallData = [
+  { x: 0, y: 1, z: -10, w: 20, h: 2, d: 1 },
+  { x: 5, y: 1, z: -5, w: 1, h: 2, d: 10 },
+  { x: -5, y: 1, z: -5, w: 1, h: 2, d: 10 },
+  { x: 0, y: 1, z: -20, w: 20, h: 2, d: 1 }
+];
+wallData.forEach(w => {
+  const wall = new THREE.Mesh(new THREE.BoxGeometry(w.w, w.h, w.d), wallMaterial);
+  wall.position.set(w.x, w.y, w.z);
+  scene.add(wall);
+  walls.push(wall);
+});
+
+// ===== Random Cubes =====
+const cubes = [];
+for (let i = 0; i < 5; i++) {
+  const cube = new THREE.Mesh(
+    new THREE.BoxGeometry(2, 2, 2),
+    new THREE.MeshStandardMaterial({ color: 0xff0000 })
+  );
+  cube.position.set(Math.random() * 20 - 10, 1, Math.random() * -30);
+  scene.add(cube);
+  cubes.push(cube);
+}
+
+// ===== Controls =====
+const controls = new THREE.PointerLockControls(camera, document.body);
+const instructions = document.getElementById("instructions");
+
+instructions.addEventListener("click", () => {
+  controls.lock();
+});
+
+controls.addEventListener('lock', () => instructions.style.display = 'none');
+controls.addEventListener('unlock', () => instructions.style.display = 'block');
+
+const keys = {};
+document.addEventListener("keydown", e => keys[e.code] = true);
+document.addEventListener("keyup", e => keys[e.code] = false);
+
+const speed = 0.2;
+
+// ===== Collision Detection =====
+function checkCollision(newPosition) {
+  const playerBox = new THREE.Box3().setFromCenterAndSize(
+    newPosition,
+    new THREE.Vector3(1, 2, 1)
+  );
+
+  for (const wall of walls) {
+    const wallBox = new THREE.Box3().setFromObject(wall);
+    if (playerBox.intersectsBox(wallBox)) return true;
+  }
+
+  for (const cube of cubes) {
+    const cubeBox = new THREE.Box3().setFromObject(cube);
+    if (playerBox.intersectsBox(cubeBox)) return true;
+  }
+
+  return false;
+}
+
+// ===== Animate Loop =====
 function animate() {
-    requestAnimationFrame(animate);
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
-    renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+
+  const direction = new THREE.Vector3();
+  controls.getDirection(direction);
+  direction.y = 0;
+  direction.normalize();
+
+  const right = new THREE.Vector3().crossVectors(direction, new THREE.Vector3(0,1,0));
+
+  const newPos = camera.position.clone();
+  if (keys["KeyW"]) newPos.add(direction.clone().multiplyScalar(speed));
+  if (keys["KeyS"]) newPos.add(direction.clone().multiplyScalar(-speed));
+  if (keys["KeyA"]) newPos.add(right.clone().multiplyScalar(-speed));
+  if (keys["KeyD"]) newPos.add(right.clone().multiplyScalar(speed));
+
+  if (!checkCollision(newPos)) camera.position.copy(newPos);
+
+  cubes.forEach(c => c.rotation.y += 0.01);
+
+  renderer.render(scene, camera);
 }
 animate();
-// Floor
-const floorGeometry = new THREE.PlaneGeometry(200, 200);
-const floorMaterial = new THREE.MeshBasicMaterial({ color: 0x228b22 });
-const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-floor.rotation.x = -Math.PI / 2; // rotate to lie flat
-floor.position.y = -1; // position under the cube
-scene.add(floor);
-// Controls
-const controls = new THREE.PointerLockControls(camera, document.body);
 
-// Click anywhere to lock the pointer
-document.body.addEventListener("click", () => {
-    controls.lock();
+// ===== Handle Resize =====
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
 });
